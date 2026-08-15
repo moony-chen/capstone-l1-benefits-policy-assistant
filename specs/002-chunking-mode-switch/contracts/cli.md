@@ -14,8 +14,14 @@ to feature 001 — FR-005).
 ```text
 npm run ask -- "question" [--k N] [--chunking window]
 tsx assistant.ts ask "question" --chunking policy
-npm run eval [--k N] [--chunking window]
+npm run eval -- [--k N] [--chunking window]
 ```
+
+**npm flag-passing rule**: via `npm run`, the `--` separator is REQUIRED
+before any flags — npm otherwise consumes them itself and the script
+receives only the remaining words (verified empirically: `npm run ask
+--k abc "test"` dropped `--k abc` and ran with defaults). Direct `tsx
+assistant.ts …` invocations need no `--`.
 
 **Behavior**:
 - `--chunking policy` — one chunk per POL-NNN; cache at

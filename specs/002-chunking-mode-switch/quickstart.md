@@ -67,8 +67,11 @@ across modes; and `data/` holds both cache files.
 ### 6. Full window-mode eval + comparison (US2/FR-006..007)
 
 ```bash
-npm run eval --chunking window
+npm run eval -- --chunking window
 ```
+
+**Note**: the `--` is required — without it npm intercepts flags like
+`--k`/`--chunking` itself and the script silently runs with defaults.
 
 **Expected**: exit 0; 15/15 records; report metadata includes
 `chunkingMode: "window"`; new `eval/results-<ts>.{json,md}`. Then author
