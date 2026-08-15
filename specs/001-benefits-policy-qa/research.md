@@ -38,7 +38,7 @@ clarifications remain.
     (`provider:"vertex-ai"`, `model:"claude-sonnet-4-6"`).
 - **Alternatives considered**: `portkey` SDK or `openai` SDK (extra
   dependency for two endpoints — violates dependency-light);
-  LangChain/LlamaIndex orchestration (far too heavy for 16 policies).
+  LangChain/LlamaIndex orchestration (far too heavy for 19 policies).
 
 ## D3: Chunking — one chunk per POL-NNN, never split mid-policy
 
@@ -48,7 +48,7 @@ clarifications remain.
   reference date instead).
 - **Rationale**: user-specified; also constitution Principle II traceability
   — a citation names a whole policy, so retrieval units and citation units
-  must match. Measured fit: 16 chunks, each well under 150 words, far
+  must match. Measured fit: 19 chunks, each well under 150 words, far
   inside model context limits, so no splitting pressure exists.
 - **Alternatives considered**: fixed-size token windows (would split
   policies and break citation traceability); sentence-level chunks (lose
@@ -64,9 +64,9 @@ clarifications remain.
   calls); otherwise re-embed all policies and rewrite the cache
   atomically.
 - **Rationale**: user-specified hash evaluation; full re-embed on mismatch
-  is 16 calls — cheap and simpler than incremental diffing (Principle V).
+  is 19 calls — cheap and simpler than incremental diffing (Principle V).
 - **Alternatives considered**: per-policy incremental updates (complexity
-  without measurable benefit at 16 chunks); no cache (re-embeds every run,
+  without measurable benefit at 19 chunks); no cache (re-embeds every run,
   slowing the eval loop and burning gateway quota).
 
 ## D5: Retrieval — cosine similarity, top-k = 4

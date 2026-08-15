@@ -45,7 +45,7 @@ Citations: none — not covered by the handbook.
 |      | citations produced, bad arguments)                 |
 
 **Diagnostics (stderr)**: cache hit/miss line (`embeddings: cache hit
-[sha256=<hash>, model=<id>]` or `cache miss → re-embedded 16 policies`),
+[sha256=<hash>, model=<id>]` or `cache miss → re-embedded 19 policies`),
 retrieved policy ids and similarity scores. Stdout carries only the
 user-facing answer.
 

@@ -24,7 +24,7 @@ npm install        # installs tsx (dev dependency); no runtime deps
 ## Validation scenarios
 
 Run in order; each checks a spec acceptance scenario. First run builds
-the embedding cache (16 embedding calls); later runs reuse it.
+the embedding cache (19 embedding calls); later runs reuse it.
 
 ### 1. Covered question with citation (User Story 1)
 
@@ -68,7 +68,7 @@ model=@azure-openai/text-embedding-3-small]` — zero embedding API calls.
 Answer cites POL-009. Exit code 0.
 
 Then touch nothing — but if `data/benefits_policies.md` changed, the same
-command shows `cache miss → re-embedded 16 policies` (hash invalidation).
+command shows `cache miss → re-embedded 19 policies` (hash invalidation).
 
 ### 5. Full 15-question evaluation (User Story 4, Quality Gates)
 

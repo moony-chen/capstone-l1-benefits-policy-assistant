@@ -18,7 +18,7 @@ Principle II).
 | body     | string | Full policy text, verbatim, unmodified         |
 | embedText| string | `"{id} {title}\n\n{body}"` — the embedded text |
 
-**Validation**: exactly 16 policies parsed (POL-001..POL-016); parse
+**Validation**: exactly 19 policies parsed (POL-001..POL-019); parse
 fails loudly if any `## POL-NNN` heading is malformed or duplicated, or
 if body is empty.
 
@@ -55,7 +55,7 @@ compute sha256(handbook) →
             (write temp file, then rename)
 ```
 
-**Validation**: a HIT whose `embeddings` keys ≠ the 16 parsed policy ids
+**Validation**: a HIT whose `embeddings` keys ≠ the 19 parsed policy ids
 is treated as a MISS (defensive; handles manual handbook edits).
 
 ## Answer

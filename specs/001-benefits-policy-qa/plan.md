@@ -13,7 +13,8 @@ conflicting/time-dependent policies instead of resolving them silently,
 and explicitly declines uncovered questions. Retrieval is embedding-based
 with exactly one chunk per POL-NNN policy (policies are never split) and a
 local JSON embedding cache invalidated by the handbook file's hash plus
-the embedding model id. Model calls go through the Perficient Portkey
+the embedding model id. 19 policies (POL-001..POL-019) are each embedded
+as a single chunk. Model calls go through the Perficient Portkey
 gateway (OpenAI-compatible REST, native `fetch`, no SDK). An `eval` mode
 runs all fifteen sample questions (`data/sample_questions.csv`) and writes
 per-question records of answer, citations, and status, satisfying the
@@ -50,7 +51,7 @@ embedding cache reused across runs when handbook hash is unchanged
 Principle V; every answer grounded and cited (Principles I–II); 2025-10-01
 treated as "today" (Quality Gates reference date).
 
-**Scale/Scope**: 16 policies (POL-001..POL-016), 15 sample questions
+**Scale/Scope**: 19 policies (POL-001..POL-019), 15 sample questions
 (Q01–Q15), one user at a time.
 
 ## Constitution Check
