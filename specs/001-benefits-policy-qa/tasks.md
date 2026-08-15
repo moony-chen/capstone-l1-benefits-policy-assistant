@@ -26,9 +26,9 @@
 
 **Purpose**: Project initialization runnable by a reviewer with minimal setup
 
-- [ ] T001 Create `package.json` at repository root with `tsx` pinned dev dependency, npm scripts `ask` (`tsx assistant.ts ask`) and `eval` (`tsx assistant.ts eval`), `"type": "module"`, engines `node >=20.6`
-- [ ] T002 [P] Create `.gitignore` at repository root ignoring `node_modules/` and `data/embeddings-cache.json` (generated cache; eval reports under `eval/` are kept as Quality Gates evidence)
-- [ ] T003 Run `npm install` and verify `npx tsx --version` executes; confirm `data/benefits_policies.md` (19 policies) and `data/sample_questions.csv` (15 questions) are present
+- [x] T001 Create `package.json` at repository root with `tsx` pinned dev dependency, npm scripts `ask` (`tsx assistant.ts ask`) and `eval` (`tsx assistant.ts eval`), `"type": "module"`, engines `node >=20.6`
+- [x] T002 [P] Create `.gitignore` at repository root ignoring `node_modules/` and `data/embeddings-cache.json` (generated cache; eval reports under `eval/` are kept as Quality Gates evidence)
+- [x] T003 Run `npm install` and verify `npx tsx --version` executes; confirm `data/benefits_policies.md` (19 policies) and `data/sample_questions.csv` (15 questions) are present
 
 ---
 
@@ -38,9 +38,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement environment loading and validation in `assistant.ts`: read `.env` vars (`PORTKEY_API_KEY`, `PORTKEY_BASE_URL`, `RAG_LLM_MODEL`, `RAG_EMBED_MODEL`); exit code 1 at startup naming any missing variable; never print the API key
-- [ ] T005 Implement handbook parsing in `assistant.ts`: split `data/benefits_policies.md` on `^## (POL-\d{3} .*)$` headings into Policy records (id, title, body, embedText); compute SHA-256 of the raw file; validate exactly 19 unique policies POL-001..POL-019 with non-empty bodies, fail loudly otherwise; define constant `EDITION_DATE = "2025-10-01"`
-- [ ] T006 Implement the Portkey gateway client in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/portkey-api.md`: native `fetch` calls to `{BASE}/embeddings` (batch input, verify vector count matches input count) and `{BASE}/chat/completions` (extract `choices[0].message.content`); retry once with backoff on network/5xx/429, then exit 1 naming endpoint and model; exit 1 on unexpected response shapes
+- [x] T004 Implement environment loading and validation in `assistant.ts`: read `.env` vars (`PORTKEY_API_KEY`, `PORTKEY_BASE_URL`, `RAG_LLM_MODEL`, `RAG_EMBED_MODEL`); exit code 1 at startup naming any missing variable; never print the API key
+- [x] T005 Implement handbook parsing in `assistant.ts`: split `data/benefits_policies.md` on `^## (POL-\d{3} .*)$` headings into Policy records (id, title, body, embedText); compute SHA-256 of the raw file; validate exactly 19 unique policies POL-001..POL-019 with non-empty bodies, fail loudly otherwise; define constant `EDITION_DATE = "2025-10-01"`
+- [x] T006 Implement the Portkey gateway client in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/portkey-api.md`: native `fetch` calls to `{BASE}/embeddings` (batch input, verify vector count matches input count) and `{BASE}/chat/completions` (extract `choices[0].message.content`); retry once with backoff on network/5xx/429, then exit 1 naming endpoint and model; exit 1 on unexpected response shapes
 
 **Checkpoint**: Foundation ready — env validated, handbook parsed, gateway client working
 
@@ -54,11 +54,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement the embedding cache in `assistant.ts` per `specs/001-benefits-policy-qa/data-model.md`: load `data/embeddings-cache.json` (`fileSha256`, `model`, `createdAt`, `embeddings` map); on startup compare handbook hash + `RAG_EMBED_MODEL` — HIT reuses vectors with zero API calls, MISS re-embeds all 19 policies in one batch and rewrites the cache atomically (temp file + rename); mismatched policy-id keys treated as MISS; print `embeddings: cache hit/miss ...` to stderr
-- [ ] T008 [US1] Implement retrieval in `assistant.ts`: embed the question, cosine similarity against cached policy vectors, top-k results (default k=4, `--k N` flag), log retrieved policy ids + scores to stderr
-- [ ] T009 [US1] Implement the answering prompt in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/portkey-api.md`: system prompt encoding constitution rules — answer ONLY from provided policy texts, no outside knowledge, cite POL-NNN for every claim, treat today as 2025-10-01; user message with the question plus top-k policy texts; first output line MUST be `CITED:` or `DECLINED:`
-- [ ] T010 [US1] Implement the `ask` command in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/cli.md`: argument parsing, pipeline ask→retrieve→chat→parse; extract every `POL-\d{3}` token from the answer and validate against parsed handbook ids (validation failure = loud exit 1, never a silent pass); `answered` requires ≥1 citation; print answer text + `Citations:` block to stdout; exit 0 on answered, 1 on error
-- [ ] T011 [US1] Verify US1: run `npm run ask -- "How many weeks of paid parental leave do I get?"` — expect 12 weeks primary / 4 weeks secondary citing POL-010, exit code 0; confirm a second run logs `cache hit` on stderr
+- [x] T007 [US1] Implement the embedding cache in `assistant.ts` per `specs/001-benefits-policy-qa/data-model.md`: load `data/embeddings-cache.json` (`fileSha256`, `model`, `createdAt`, `embeddings` map); on startup compare handbook hash + `RAG_EMBED_MODEL` — HIT reuses vectors with zero API calls, MISS re-embeds all 19 policies in one batch and rewrites the cache atomically (temp file + rename); mismatched policy-id keys treated as MISS; print `embeddings: cache hit/miss ...` to stderr
+- [x] T008 [US1] Implement retrieval in `assistant.ts`: embed the question, cosine similarity against cached policy vectors, top-k results (default k=4, `--k N` flag), log retrieved policy ids + scores to stderr
+- [x] T009 [US1] Implement the answering prompt in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/portkey-api.md`: system prompt encoding constitution rules — answer ONLY from provided policy texts, no outside knowledge, cite POL-NNN for every claim, treat today as 2025-10-01; user message with the question plus top-k policy texts; first output line MUST be `CITED:` or `DECLINED:`
+- [x] T010 [US1] Implement the `ask` command in `assistant.ts` per `specs/001-benefits-policy-qa/contracts/cli.md`: argument parsing, pipeline ask→retrieve→chat→parse; extract every `POL-\d{3}` token from the answer and validate against parsed handbook ids (validation failure = loud exit 1, never a silent pass); `answered` requires ≥1 citation; print answer text + `Citations:` block to stdout; exit 0 on answered, 1 on error
+- [x] T011 [US1] Verify US1: run `npm run ask -- "How many weeks of paid parental leave do I get?"` — expect 12 weeks primary / 4 weeks secondary citing POL-010, exit code 0; confirm a second run logs `cache hit` on stderr
 
 **Checkpoint**: US1 fully functional — grounded, cited answers in seconds
 
@@ -72,9 +72,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Implement the DECLINED path in `assistant.ts`: parse `DECLINED:` first line, surface the explicit not-covered message to stdout with `Citations: none — not covered by the handbook.`, exit code 3; `declined` answers MUST have empty citations and MUST NOT contain policy specifics invented by the model (fail validation otherwise)
-- [ ] T013 [US2] Extend the system prompt in `assistant.ts` for partial coverage: when some aspects of a question are covered and others are not, answer the covered aspects with citations and explicitly flag the uncovered aspects as not covered; when retrieved text is only tangentially related, decline rather than stretch it
-- [ ] T014 [US2] Verify US2: run `npm run ask -- "Does the company pay for my gym membership?"` — expect explicit not-covered decline, `Citations: none`, exit code 3; run a partially covered question and confirm covered part answered with citation + uncovered part flagged
+- [x] T012 [US2] Implement the DECLINED path in `assistant.ts`: parse `DECLINED:` first line, surface the explicit not-covered message to stdout with `Citations: none — not covered by the handbook.`, exit code 3; `declined` answers MUST have empty citations and MUST NOT contain policy specifics invented by the model (fail validation otherwise)
+- [x] T013 [US2] Extend the system prompt in `assistant.ts` for partial coverage: when some aspects of a question are covered and others are not, answer the covered aspects with citations and explicitly flag the uncovered aspects as not covered; when retrieved text is only tangentially related, decline rather than stretch it
+- [x] T014 [US2] Verify US2: run `npm run ask -- "Does the company pay for my gym membership?"` — expect explicit not-covered decline, `Citations: none`, exit code 3; run a partially covered question and confirm covered part answered with citation + uncovered part flagged
 
 **Checkpoint**: US1 + US2 both independently working
 
@@ -88,8 +88,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Extend the system prompt in `assistant.ts` for conflicts and time-dependency per constitution Principle III: when retrieved policies conflict or change over time, present ALL sides with their POL-NNN ids and dates/effective windows relative to today = 2025-10-01; never silently choose, average, or omit a side; verify k=4 retrieves both POL-007 and POL-015 for 401(k) questions (log retrieved ids to stderr as evidence)
-- [ ] T016 [US3] Verify US3 with quickstart scenarios 1–2 in `specs/001-benefits-policy-qa/quickstart.md`: 401(k) question shows POL-007 terms (before 2026-01-01) AND POL-015 changes (effective 2026-01-01); sabbatical question shows POL-016's five-year eligibility AND seven-year approval review, both cited; both exit 0
+- [x] T015 [US3] Extend the system prompt in `assistant.ts` for conflicts and time-dependency per constitution Principle III: when retrieved policies conflict or change over time, present ALL sides with their POL-NNN ids and dates/effective windows relative to today = 2025-10-01; never silently choose, average, or omit a side; verify k=4 retrieves both POL-007 and POL-015 for 401(k) questions (log retrieved ids to stderr as evidence)
+- [x] T016 [US3] Verify US3 with quickstart scenarios 1–2 in `specs/001-benefits-policy-qa/quickstart.md`: 401(k) question shows POL-007 terms (before 2026-01-01) AND POL-015 changes (effective 2026-01-01); sabbatical question shows POL-016's five-year eligibility AND seven-year approval review, both cited; both exit 0
 
 **Checkpoint**: All answering stories (US1–US3) independently functional
 
@@ -103,10 +103,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T017 [US4] Implement CSV parsing in `assistant.ts` for `data/sample_questions.csv`: read question_id + employee_question rows (Q01–Q15); exit 1 if the file is missing or does not contain exactly 15 uniquely-identified questions
-- [ ] T018 [US4] Implement the `eval` command loop in `assistant.ts`: run the US1–US3 answer pipeline for each question (shared embedding cache, single cache build), pace calls to respect gateway rate limits, collect EvaluationRecords (questionId, question, answer, retrievedPolicies) per `specs/001-benefits-policy-qa/data-model.md`
-- [ ] T019 [US4] Implement report writing in `assistant.ts`: write `eval/results-<timestamp>.json` and `.md` (per-question answer, citations, status; run metadata: timestamp, both model ids, k, handbook sha256) plus a 15-row summary table to stdout; exit 0 if the report is complete (15 validated records), 1 otherwise; ensure no secrets appear in reports
-- [ ] T020 [US4] Run `npm run eval` end-to-end: verify exit 0, 15 records, Q01–Q15 all present; save this baseline report (before/after evidence for any future improvement per Quality Gates); explicitly inspect the sabbatical and 401(k) rows for conflict surfacing and probe for failure cases — a uniformly clean run must be investigated, not celebrated
+- [x] T017 [US4] Implement CSV parsing in `assistant.ts` for `data/sample_questions.csv`: read question_id + employee_question rows (Q01–Q15); exit 1 if the file is missing or does not contain exactly 15 uniquely-identified questions
+- [x] T018 [US4] Implement the `eval` command loop in `assistant.ts`: run the US1–US3 answer pipeline for each question (shared embedding cache, single cache build), pace calls to respect gateway rate limits, collect EvaluationRecords (questionId, question, answer, retrievedPolicies) per `specs/001-benefits-policy-qa/data-model.md`
+- [x] T019 [US4] Implement report writing in `assistant.ts`: write `eval/results-<timestamp>.json` and `.md` (per-question answer, citations, status; run metadata: timestamp, both model ids, k, handbook sha256) plus a 15-row summary table to stdout; exit 0 if the report is complete (15 validated records), 1 otherwise; ensure no secrets appear in reports
+- [x] T020 [US4] Run `npm run eval` end-to-end: verify exit 0, 15 records, Q01–Q15 all present; save this baseline report (before/after evidence for any future improvement per Quality Gates); explicitly inspect the sabbatical and 401(k) rows for conflict surfacing and probe for failure cases — a uniformly clean run must be investigated, not celebrated
 
 **Checkpoint**: Full Quality Gates evidence loop working
 
@@ -116,9 +116,9 @@
 
 **Purpose**: End-to-end validation and compliance audit across all stories
 
-- [ ] T021 Run all five scenarios in `specs/001-benefits-policy-qa/quickstart.md` in order; confirm expected exit codes (0/0/3/0/0), citations, cache hit line, and eval artifacts
-- [ ] T022 Audit output hygiene in `assistant.ts`: `PORTKEY_API_KEY` never appears in stdout, stderr, eval reports, or the cache; stdout carries only user-facing answer content per `specs/001-benefits-policy-qa/contracts/cli.md`
-- [ ] T023 Final constitution compliance review: confirm single-file implementation (`assistant.ts`), zero runtime dependencies, one-chunk-per-policy intact, citation validation active, decline exit code 3, 2025-10-01 reference date used everywhere; clean up dead code and unused flags
+- [x] T021 Run all five scenarios in `specs/001-benefits-policy-qa/quickstart.md` in order; confirm expected exit codes (0/0/3/0/0), citations, cache hit line, and eval artifacts
+- [x] T022 Audit output hygiene in `assistant.ts`: `PORTKEY_API_KEY` never appears in stdout, stderr, eval reports, or the cache; stdout carries only user-facing answer content per `specs/001-benefits-policy-qa/contracts/cli.md`
+- [x] T023 Final constitution compliance review: confirm single-file implementation (`assistant.ts`), zero runtime dependencies, one-chunk-per-policy intact, citation validation active, decline exit code 3, 2025-10-01 reference date used everywhere; clean up dead code and unused flags
 
 ---
 

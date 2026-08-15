@@ -1,0 +1,19 @@
+{
+  "name": "benefits-policy-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Grounded, cited Q&A over the employee benefits handbook (People Operations)",
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "ask": "tsx assistant.ts ask",
+    "eval": "tsx assistant.ts eval"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "tsx": "^4.19.0",
+    "typescript": "^7.0.2"
+  }
+}

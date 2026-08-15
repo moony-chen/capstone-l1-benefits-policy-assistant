@@ -1,8 +1,13 @@
+# Dependencies
+node_modules/
+
+# Secrets - never commit the live gateway key
 .env
 
-__pycache__/
-*.pyc
-.DS_Store
+# Generated runtime artifacts
+data/embeddings-cache.json
 
-# generated at runtime (add when they exist)
-embeddings_cache.json
+# Universal
+.DS_Store
+*.log
+*.tmp
