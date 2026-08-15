@@ -195,3 +195,28 @@ Not applicable: single-file implementation makes task-level parallelism unsafe b
 - Every verification task cites its quickstart.md scenario or explicit expected behavior (exit codes, policy ids) per constitution Principle VI
 - Stop at any story checkpoint to validate independently
 - After any post-baseline change, re-run `npm run eval` and report measured before/after including regressions (Quality Gates)
+
+---
+
+## Phase 8: Improvement — correct over-answered Q13 to a decline (Quality Gates cycle)
+
+**Goal**: Q13 ("does PTO keep accruing during parental leave?") is not addressed
+by the handbook; the baseline run (eval/results-2026-08-15T06-55-18-823Z)
+wrongly marked it `answered` by summarizing related-but-non-responsive
+policies. Fix the behavior, then demonstrate it with the constitution's
+measured before/after cycle including regressions.
+
+- [x] T024 Tighten the answering rules in `assistant.ts`: when a question's
+  central ask is not addressed by retrieved policies — even when related
+  policies provide background context — the system MUST fully decline
+  (DECLINED, no citations, exit 3). Partial-coverage answers are only for
+  multi-part questions where at least one part is directly answerable.
+- [x] T025 Verify the fix on `ask`: Q13 question declines with exit 3; the
+  multi-part partial-coverage case (pet insurance + dental cleanings) still
+  answers the covered part with citations, exit 0 (regression guard).
+- [x] T026 Re-run `npm run eval` end-to-end into a new report under `eval/`
+  (after-state; baseline report stays untouched).
+- [x] T027 Compare the two reports (before vs after) in
+  `eval/comparison-<timestamp>.md`: per-question status and citation diff;
+  expected change is exactly Q13 answered→declined; report ANY other change
+  honestly as a regression (constitution Quality Gates).

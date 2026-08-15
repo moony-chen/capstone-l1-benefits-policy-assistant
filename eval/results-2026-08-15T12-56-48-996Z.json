@@ -1,0 +1,272 @@
+{
+  "runAt": "2026-08-15T12:56:48.997Z",
+  "llmModel": "@dsvertex/anthropic.claude-sonnet-4-6",
+  "embedModel": "@azure-openai/text-embedding-3-small",
+  "k": 4,
+  "handbookSha256": "56311e7343e5a2f4584105fa738cb70d812575d981eab59fdc2a1fafb87f6d51",
+  "editionDate": "2025-10-01",
+  "records": [
+    {
+      "questionId": "Q01",
+      "question": "I just got married last month - can I add my spouse to my medical plan now?",
+      "answer": {
+        "status": "answered",
+        "text": "Yes, you can add your spouse to your medical plan outside of open enrollment because marriage is a qualifying life event (POL-002). However, there is an important deadline to be aware of:\n\n**You must submit the change within 30 days of your marriage date** (POL-002). Since you were married \"last month,\" you should act immediately and confirm with People Operations whether you are still within that 30-day window, as missing it would mean you'd need to wait until the next open enrollment period (the first two weeks of November, effective January 1) to make the change (POL-002).\n\nIf you are still within the 30-day window and proceed, your medical plan options that include spousal coverage are the **Employee+Spouse** tier, available across all three plan options — Bronze HDHP, Silver PPO, and Gold PPO (POL-003).\n\n**One additional note if you are on or considering the Bronze HDHP:** Adding a spouse may affect your HSA contribution level, as the employer seed amount increases from $750 (individual) to $1,500 (family) (POL-005). You'll want to confirm the applicable coverage tier with People Operations.\n\n**Action item:** Contact People Operations right away to confirm you are still within the 30-day qualifying life event window before submitting your enrollment change.",
+        "citations": [
+          "POL-002",
+          "POL-003",
+          "POL-005"
+        ],
+        "retrievedPolicies": [
+          "POL-002",
+          "POL-003",
+          "POL-005",
+          "POL-001"
+        ]
+      }
+    },
+    {
+      "questionId": "Q02",
+      "question": "How much does the company match on my 401k and when does it vest?",
+      "answer": {
+        "status": "answered",
+        "text": "There are **two versions** of the 401(k) match and vesting terms depending on the date, as POL-015 supersedes parts of POL-007 effective January 1, 2026.\n\n---\n\n**Today (through December 31, 2025) — POL-007 applies:**\n\n- **Match:** 100% of the first 3% of your contributions, plus 50% of the next 2%, for a **maximum employer match of 4%** of eligible pay (POL-007).\n- **Vesting:** The match vests over **three years, one-third per year** (POL-007).\n\n---\n\n**Starting January 1, 2026 — POL-015 supersedes the match and vesting terms:**\n\n- **Match:** 100% of the first **4%** of eligible pay — an improvement from the current 3% threshold (POL-015).\n- **Vesting:** Match becomes **immediately vested** upon being credited — replacing the three-year graded schedule (POL-015).\n\n---\n\n**What stays the same regardless of date:**\n- Auto-enrollment at 4% after 60 days and the choice between pre-tax or Roth contributions remain unchanged under POL-007, as POL-015 explicitly does not alter those provisions (POL-015).\n\nIf you have questions about which vesting schedule applies to **previously credited match amounts**, please clarify with People Operations directly.",
+        "citations": [
+          "POL-015",
+          "POL-007"
+        ],
+        "retrievedPolicies": [
+          "POL-007",
+          "POL-015",
+          "POL-012",
+          "POL-001"
+        ]
+      }
+    },
+    {
+      "questionId": "Q03",
+      "question": "I'm having a baby in the spring - how many weeks of paid parental leave do I get?",
+      "answer": {
+        "status": "answered",
+        "text": "Under **POL-010 Parental Leave**, the amount of paid parental leave you receive depends on your caregiver designation:\n\n- **Primary caregiver:** 12 weeks of paid parental leave at 100% pay\n- **Secondary caregiver:** 4 weeks of paid parental leave\n\nThis benefit is available for birth (which applies to your situation), as well as adoption or foster placement, and must be used within the first 12 months of the event. Note that parental leave runs concurrently with FMLA (POL-010).\n\nTo get the correct entitlement confirmed for your specific situation, you'll want to let People Operations know whether you will be the primary or secondary caregiver when you submit your request.",
+        "citations": [
+          "POL-010"
+        ],
+        "retrievedPolicies": [
+          "POL-010",
+          "POL-009",
+          "POL-017",
+          "POL-016"
+        ]
+      }
+    },
+    {
+      "questionId": "Q04",
+      "question": "Can I have both an HSA and a healthcare FSA at the same time?",
+      "answer": {
+        "status": "answered",
+        "text": "No, you cannot have both a Healthcare FSA and an HSA at the same time. POL-006 explicitly states: **\"You cannot enroll in a Healthcare FSA and an HSA in the same year.\"**\n\nFor additional context, the HSA is only available when enrolled in the Bronze HDHP plan (POL-005), while the Healthcare FSA allows up to $3,200/year pre-tax (POL-006). You would need to choose one or the other — not both — for a given plan year.\n\nIf you have questions about which option is better suited to your situation, please reach out to the People Operations team directly.",
+        "citations": [
+          "POL-006",
+          "POL-005"
+        ],
+        "retrievedPolicies": [
+          "POL-006",
+          "POL-005",
+          "POL-003",
+          "POL-004"
+        ]
+      }
+    },
+    {
+      "questionId": "Q05",
+      "question": "I work 24 hours a week - which benefits am I eligible for?",
+      "answer": {
+        "status": "answered",
+        "text": "At 24 scheduled hours per week, you fall into the **part-time (20–29 hours/week)** category defined in POL-001. Based on the handbook, here is what applies:\n\n---\n\n### ✅ Benefits You Are Eligible For (Part-Time, 20–29 hrs/week)\n\nPer **POL-001**, part-time employees scheduled 20–29 hours/week are eligible for:\n- **Dental**\n- **Vision**\n- **Retirement plan**\n\n---\n\n### ❌ Benefits You Are NOT Eligible For\n\nPer **POL-001**, full health and welfare benefits are reserved for **full-time employees (30+ hours/week)**. Since you do not meet that threshold, you are not eligible for the broader suite of health and welfare benefits.\n\n---\n\n### ⚠️ Areas the Handbook Does Not Clarify for Your Situation\n\nThe following policies exist in the handbook but **do not explicitly state whether they apply to part-time employees**:\n\n- **Life & Disability (POL-012):** The policy does not specify eligibility by hours worked. It is silent on whether part-time employees qualify for basic life insurance, short-term disability, or long-term disability.\n- **PTO (POL-008):** The policy describes accrual rates by tenure but does not specify whether part-time employees are eligible or how accrual may differ.\n- **Sabbatical (POL-016):** Eligibility requires continuous **full-time** service, so this would not apply to you in your current part-time status.\n\nFor the items marked as unclear (POL-012, POL-008), please follow up directly with **People Operations** to confirm whether and how those benefits apply to your part-time role.",
+        "citations": [
+          "POL-001",
+          "POL-012",
+          "POL-008",
+          "POL-016"
+        ],
+        "retrievedPolicies": [
+          "POL-001",
+          "POL-012",
+          "POL-016",
+          "POL-008"
+        ]
+      }
+    },
+    {
+      "questionId": "Q06",
+      "question": "How many PTO days do I accrue after 7 years here and how much carries over?",
+      "answer": {
+        "status": "answered",
+        "text": "At 7 years of tenure, here is what the handbook says about your PTO accrual and carryover:\n\n**Accrual Rate:**\nWith 7 years of service, you fall into the **6+ years** tenure bracket, which earns you **25 days of PTO per year** (POL-008). PTO accrues each pay period and is available as it accrues (POL-008).\n\n**Carryover:**\nThe maximum carryover into the next calendar year is **5 days** (POL-008). Any PTO balance above 5 days at year-end would not carry over.\n\n> Note: You also receive 6 paid sick days per year under a **separate** Sick & Safe Leave policy (POL-009), which are front-loaded on January 1 and do **not** roll over — these are distinct from your PTO balance.",
+        "citations": [
+          "POL-008",
+          "POL-009"
+        ],
+        "retrievedPolicies": [
+          "POL-008",
+          "POL-009",
+          "POL-016",
+          "POL-015"
+        ]
+      }
+    },
+    {
+      "questionId": "Q07",
+      "question": "Does the company help pay for my home internet if I work remotely?",
+      "answer": {
+        "status": "answered",
+        "text": "Yes, the company does help pay for home internet if you work remotely. Under **POL-011 (Remote Work Stipend)**, fully remote and hybrid employees receive **$50/month toward internet costs**. This is reimbursed through the expense system and requires a receipt.\n\nAdditionally, POL-011 provides a one-time **$500 home-office setup stipend** for eligible remote/hybrid employees.\n\n**Important note:** This benefit is **not available to on-site-only staff** (POL-011). If you are unsure whether your role qualifies as fully remote or hybrid, please confirm your work arrangement classification with People Operations.",
+        "citations": [
+          "POL-011"
+        ],
+        "retrievedPolicies": [
+          "POL-011",
+          "POL-019",
+          "POL-014",
+          "POL-001"
+        ]
+      }
+    },
+    {
+      "questionId": "Q08",
+      "question": "What is the deductible on the Silver PPO plan?",
+      "answer": {
+        "status": "answered",
+        "text": "The Silver PPO plan has a **$1,500 individual deductible** (POL-003).\n\nPOL-003 also notes that the Silver PPO is a mid-premium plan with a broad network. If you need information about family-tier deductibles or other cost-sharing details (e.g., copays, out-of-pocket maximums) for the Silver PPO, those specifics are not included in the provided policy excerpts — you would need to contact People Operations for clarification.",
+        "citations": [
+          "POL-003"
+        ],
+        "retrievedPolicies": [
+          "POL-003",
+          "POL-005",
+          "POL-004",
+          "POL-006"
+        ]
+      }
+    },
+    {
+      "questionId": "Q09",
+      "question": "Is there a lifetime maximum for my kid's braces under the dental plan?",
+      "answer": {
+        "status": "answered",
+        "text": "Yes, orthodontia — which covers braces — has a **separate $1,500 lifetime maximum** under the dental plan (POL-004). This is distinct from the $2,000 annual maximum that applies to other dental services (POL-004). The policy does not specify an age restriction or dependent-specific limit for orthodontia, so this lifetime maximum would apply to covered dependents such as your child.\n\nIf you have questions about how the lifetime maximum is tracked or applied per dependent, it would be worth confirming directly with People Operations or the dental plan carrier, as those administrative details are not addressed in the handbook excerpts.",
+        "citations": [
+          "POL-004"
+        ],
+        "retrievedPolicies": [
+          "POL-004",
+          "POL-003",
+          "POL-005",
+          "POL-012"
+        ]
+      }
+    },
+    {
+      "questionId": "Q10",
+      "question": "Can I get reimbursed for a cloud certification course?",
+      "answer": {
+        "status": "answered",
+        "text": "A cloud certification course may be eligible for reimbursement under the Learning Reimbursement program (POL-014), subject to the following conditions:\n\n- **Amount**: Up to **$5,250 per year** is available for approved certifications.\n- **Pre-approval**: You must obtain **manager pre-approval** before enrolling.\n- **Grade requirement**: A grade of **B or better** is required (note: for a certification course, this would typically correspond to passing the certification, though the handbook specifies a \"B or better\" standard — you should confirm with People Operations how this applies to pass/fail certification exams).\n- **Stay agreement**: You must agree to remain with the company for **one year** after receiving reimbursement.\n\nTo pursue this, make sure the certification qualifies as an \"approved certification\" under POL-014 and secure manager pre-approval before starting the course.",
+        "citations": [
+          "POL-014"
+        ],
+        "retrievedPolicies": [
+          "POL-014",
+          "POL-011",
+          "POL-019",
+          "POL-013"
+        ]
+      }
+    },
+    {
+      "questionId": "Q11",
+      "question": "What will the 401k match and vesting schedule be starting next year?",
+      "answer": {
+        "status": "answered",
+        "text": "Starting January 1, 2026 (\"next year\" relative to today, 2025-10-01), the following changes take effect per **POL-015**:\n\n**401(k) Employer Match:**\nThe employer match will change to **100% of the first 4% of eligible pay** (POL-015). This is an increase from the current match structure under **POL-007**, which provides 100% of the first 3% plus 50% of the next 2% (for a maximum 4% match).\n\n**Vesting Schedule:**\nVesting will become **immediate upon the match being credited** (POL-015). This replaces the current three-year graded schedule (one-third vesting per year) that applies today under **POL-007**.\n\n---\n\n**Summary of what applies when:**\n\n| Period | Match Formula | Vesting |\n|---|---|---|\n| **Now (before Jan 1, 2026)** | 100% of first 3% + 50% of next 2% *(POL-007)* | 3-year graded (1/3 per year) *(POL-007)* |\n| **Starting Jan 1, 2026** | 100% of first 4% *(POL-015)* | Immediate *(POL-015)* |\n\nNote: POL-015 confirms that the auto-enrollment default (4% after 60 days) and the pre-tax/Roth contribution choice from POL-007 are **unchanged** and continue to apply.",
+        "citations": [
+          "POL-015",
+          "POL-007"
+        ],
+        "retrievedPolicies": [
+          "POL-015",
+          "POL-007",
+          "POL-005",
+          "POL-002"
+        ]
+      }
+    },
+    {
+      "questionId": "Q12",
+      "question": "How many years of service do I need before I can take a sabbatical?",
+      "answer": {
+        "status": "answered",
+        "text": "POL-016 contains a **conflict** on the years of service required for sabbatical eligibility that you should clarify with People Operations:\n\n- **Statement 1:** POL-016 states that employees become eligible for an unpaid four-week sabbatical after **five (5) years** of continuous full-time service.\n- **Statement 2:** POL-016 also states that sabbatical requests are reviewed and approved **only for employees who have completed at least seven (7) years** of continuous full-time service, subject to manager approval and business needs.\n\nThese two thresholds within the same policy are in direct conflict — one sets eligibility at 5 years and the other sets the approval standard at 7 years. It is unclear whether 5 years makes you eligible to *request* a sabbatical while 7 years is required for *approval*, or whether one figure supersedes the other.\n\n**Please contact People Operations to clarify which service threshold applies before submitting a sabbatical request.**",
+        "citations": [
+          "POL-016"
+        ],
+        "retrievedPolicies": [
+          "POL-016",
+          "POL-009",
+          "POL-008",
+          "POL-017"
+        ]
+      }
+    },
+    {
+      "questionId": "Q13",
+      "question": "If I take parental leave, does my PTO keep accruing while I'm out?",
+      "answer": {
+        "status": "declined",
+        "text": "The handbook does not cover this question. While POL-008 describes how PTO accrues generally (each pay period, on a tenure-based schedule) and POL-010 describes parental leave entitlements, neither policy — nor any other provided excerpt — addresses whether PTO continues to accrue during a period of parental leave. The employee should contact People Operations directly for clarification on this point.",
+        "citations": [],
+        "retrievedPolicies": [
+          "POL-008",
+          "POL-010",
+          "POL-009",
+          "POL-016"
+        ]
+      }
+    },
+    {
+      "questionId": "Q14",
+      "question": "My grandfather passed away - how much bereavement leave do I get?",
+      "answer": {
+        "status": "answered",
+        "text": "You are eligible for **up to 2 paid days** of bereavement leave for the death of your grandfather. Per POL-017, grandparents fall under the \"extended family\" category, which provides up to 2 paid days (as opposed to the 5 paid days available for immediate family members such as a spouse, child, parent, or sibling).\n\nTo request this leave, please submit your request to People Operations within 30 days of the event. Per POL-017, no documentation is required for your first bereavement request in a calendar year.",
+        "citations": [
+          "POL-017"
+        ],
+        "retrievedPolicies": [
+          "POL-017",
+          "POL-016",
+          "POL-010",
+          "POL-009"
+        ]
+      }
+    },
+    {
+      "questionId": "Q15",
+      "question": "I'm on the Bronze HDHP - how much does the company put into my HSA for family coverage?",
+      "answer": {
+        "status": "answered",
+        "text": "For family coverage on the Bronze HDHP, the company seeds **$1,500 per year** into your HSA (POL-005).\n\nFor reference, the individual seed amount is $750/year, and 2025 IRS contribution limits apply to total contributions (employer + employee combined) (POL-005).",
+        "citations": [
+          "POL-005"
+        ],
+        "retrievedPolicies": [
+          "POL-005",
+          "POL-003",
+          "POL-006",
+          "POL-004"
+        ]
+      }
+    }
+  ]
+}

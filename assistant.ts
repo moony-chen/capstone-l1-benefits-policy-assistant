@@ -196,12 +196,12 @@ function systemPrompt(): string {
     "2. Citations: support every factual claim with the POL-NNN policy id it comes from. Use only policy ids that appear in the provided excerpts; never invent an id, number, or provision.",
     "3. Conflicts: if the provided policies disagree with each other (for example, two different eligibility thresholds), report BOTH statements with their policy ids. Never silently choose one side, average them, or hide the discrepancy — flag it as a conflict the employee should clarify with People Operations.",
     "4. Time-dependent policies: when a policy changes on a future effective date (or a previous one is superseded), present EACH version with its dates/effective window relative to today (${EDITION_DATE}). State which applies today and what changes later.",
-    "5. Partial coverage: if only some aspects of the question are covered, answer the covered aspects with citations and explicitly state which aspects the handbook does not cover.",
-    "6. Declining: if the provided policies do not cover the question at all, decline. Do not guess, extrapolate, or answer from general knowledge. A correct decline is a correct answer.",
+    "5. Partial coverage: only for questions with MULTIPLE distinct parts where at least one part is directly answerable — answer that part with citations and explicitly state which parts the handbook does not cover.",
+    "6. Declining: if the question's central ask — the specific thing the employee needs to know — is not addressed by the provided policies, decline the whole question, even when related policies provide background context. Do NOT answer by summarizing related-but-non-responsive policies: if those policies do not actually answer what was asked, that is a decline, not a partial answer. Do not guess, extrapolate, or answer from general knowledge. A correct decline is a correct answer.",
     "",
     "Output format (strict):",
     "- If you can answer any covered aspect: the FIRST line must be exactly `CITED:` then the answer on the following lines, with POL-NNN citations inline.",
-    "- If nothing in the provided policies covers the question: the FIRST line must be exactly `DECLINED:` then a brief statement that INCLUDES the phrase \"the handbook does not cover this question\". Do not mention or list any POL-NNN ids or policy names in the decline, and do not invent policy details.",
+    "- If nothing in the provided policies covers the question: the FIRST line must be exactly `DECLINED:` then a brief statement that INCLUDES the phrase \"the handbook does not cover this question\". You may briefly name the policies you checked and state that they are silent on what was asked, but you MUST NOT present any policy as supporting an answer, and MUST NOT invent policy details.",
   ].join("\n");
 }
 
@@ -212,20 +212,17 @@ function userPrompt(question: string, retrieved: { policy: Policy }[]): string {
 
 function parseAnswer(content: string, handbook: Handbook, retrievedIds: string[]): Answer {
   const lines = content.split("\n");
-  const first = lines[0].trim();
-  const rest = lines.slice(1).join("\n").trim();
-  if (first === "DECLINED:") {
-    const citedInText = rest.match(/POL-\d{3}/g) ?? [];
-    if (citedInText.length > 0) {
-      fail(`declined answer must not contain policy references (found ${citedInText.join(", ")})`);
-    }
+  const first = lines[0];
+  const marker = first.startsWith("CITED:") ? "CITED:" : first.startsWith("DECLINED:") ? "DECLINED:" : null;
+  if (!marker) {
+    fail(`unexpected answer format: first line must start with CITED: or DECLINED: (got "${first.slice(0, 60)}")`);
+  }
+  const rest = [first.slice(marker.length), ...lines.slice(1)].join("\n").trim();
+  if (marker === "DECLINED:") {
     if (!/does not cover|not covered/i.test(rest)) {
       fail(`declined answer must explicitly state the handbook does not cover the question — got: "${rest.slice(0, 200)}"`);
     }
     return { status: "declined", text: rest, citations: [], retrievedPolicies: retrievedIds };
-  }
-  if (first !== "CITED:") {
-    fail(`unexpected answer format: first line must be CITED: or DECLINED: (got "${first.slice(0, 60)}")`);
   }
   const tokens = new Set(rest.match(/POL-\d{3}/g) ?? []);
   if (tokens.size === 0) fail("answered question must cite at least one POL-NNN policy");
