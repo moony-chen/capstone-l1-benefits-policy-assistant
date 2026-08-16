@@ -27,7 +27,7 @@
 
 **Purpose**: Prep before touching `assistant.ts`
 
-- [ ] T001 Update `.gitignore` at repository root to ignore BOTH generated cache files (`data/embeddings-cache-policy.json`, `data/embeddings-cache-window.json`) in place of the legacy single entry
+- [x] T001 Update `.gitignore` at repository root to ignore BOTH generated cache files (`data/embeddings-cache-policy.json`, `data/embeddings-cache-window.json`) in place of the legacy single entry
 
 ---
 
@@ -37,10 +37,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Refactor `assistant.ts` to a unified Chunk type per specs/002-chunking-mode-switch/data-model.md: `{ key, policyIds, header, body, embedText }`; policy-mode chunker produces 19 chunks from the existing Policy records (key=`POL-NNN`, header=`{id} {title}`) with retrieval, prompting (`header\n\n{body}`), and cache logic now operating on Chunks — zero behavior change in policy mode (guards US1 scenario 1)
-- [ ] T003 Implement the window chunker in `assistant.ts` per specs/002-chunking-mode-switch/research.md D1/D3: concatenate `{id} {title}\n\n{body}` of all 19 policies in handbook order (preamble excluded), split into sequential ≤150-word windows (whole words, deterministic), key=`W01`…, policyIds=overlapped POL-NNN ids, header=`Excerpt from {ids}`; validate every chunk's policyIds ⊆ parsed handbook ids and all windows ≤150 words (final window may be shorter)
-- [ ] T004 Implement per-mode embedding caches in `assistant.ts` per specs/002-chunking-mode-switch/data-model.md: `data/embeddings-cache-{policy|window}.json` with validity = fileSha256 ∧ model ∧ mode (window mode additionally checks windowWords=150 ∧ chunk keys match); HIT logs `cache hit [mode=…, sha256=…, model=…]`, MISS embeds all chunks of that mode in ONE batch and atomically rewrites only that mode's file; one-time legacy migration renames valid `data/embeddings-cache.json` → `embeddings-cache-policy.json` (noted on stderr), never touching window cache
-- [ ] T005 Implement `--chunking <policy|window>` argument parsing in `assistant.ts` for both `ask` and `eval` per specs/002-chunking-mode-switch/contracts/cli.md: optional flag, absent ⇒ policy; invalid value ⇒ exit 1 with usage; `--k` unchanged (range 1–19); document-confirmed npm `--` semantics (flags after `--` reach the script)
+- [x] T002 Refactor `assistant.ts` to a unified Chunk type per specs/002-chunking-mode-switch/data-model.md: `{ key, policyIds, header, body, embedText }`; policy-mode chunker produces 19 chunks from the existing Policy records (key=`POL-NNN`, header=`{id} {title}`) with retrieval, prompting (`header\n\n{body}`), and cache logic now operating on Chunks — zero behavior change in policy mode (guards US1 scenario 1)
+- [x] T003 Implement the window chunker in `assistant.ts` per specs/002-chunking-mode-switch/research.md D1/D3: concatenate `{id} {title}\n\n{body}` of all 19 policies in handbook order (preamble excluded), split into sequential ≤150-word windows (whole words, deterministic), key=`W01`…, policyIds=overlapped POL-NNN ids, header=`Excerpt from {ids}`; validate every chunk's policyIds ⊆ parsed handbook ids and all windows ≤150 words (final window may be shorter)
+- [x] T004 Implement per-mode embedding caches in `assistant.ts` per specs/002-chunking-mode-switch/data-model.md: `data/embeddings-cache-{policy|window}.json` with validity = fileSha256 ∧ model ∧ mode (window mode additionally checks windowWords=150 ∧ chunk keys match); HIT logs `cache hit [mode=…, sha256=…, model=…]`, MISS embeds all chunks of that mode in ONE batch and atomically rewrites only that mode's file; one-time legacy migration renames valid `data/embeddings-cache.json` → `embeddings-cache-policy.json` (noted on stderr), never touching window cache
+- [x] T005 Implement `--chunking <policy|window>` argument parsing in `assistant.ts` for both `ask` and `eval` per specs/002-chunking-mode-switch/contracts/cli.md: optional flag, absent ⇒ policy; invalid value ⇒ exit 1 with usage; `--k` unchanged (range 1–19); document-confirmed npm `--` semantics (flags after `--` reach the script)
 
 **Checkpoint**: Both chunkers + caches + flag parsing ready; policy mode still behaves exactly as feature 001
 
@@ -54,9 +54,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Wire the mode through the answering pipeline in `assistant.ts`: mode selects chunker + cache file; retrieval ranks Chunks (stderr shows `W03(0.582)…` or `POL-NNN(…)` per mode); `retrievedPolicies` in answers/eval records becomes the de-duplicated union of top-k chunks' policyIds; `userPrompt` renders each chunk as `header\n\n{body}` so window prompts expose citable POL ids (FR-003)
-- [ ] T007 [US1] Verify US1 with quickstart scenarios 1–5 in specs/002-chunking-mode-switch/quickstart.md: (1) no-flag sick-days ask → POL-009, exit 0, legacy cache migration + `cache hit [mode=policy]`; (2) `-- --chunking window` Silver PPO ask → $1,500 deductible citing POL-003, exit 0; (3) sabbatical window ask → BOTH five- and seven-year POL-016 thresholds present; (4) 401(k) window ask → POL-007 AND POL-015 with dates; (5) mode isolation — after window runs, no-flag ask still `cache hit [mode=policy]`, both cache files exist
-- [ ] T008 [US1] Add `chunkingMode` to eval report metadata in `assistant.ts` (required field, `policy|window`) and to the markdown report header per FR-006; confirm a policy-mode eval record (spot-run `eval -- --k 4` if a fresh report is needed) carries `chunkingMode: "policy"`
+- [x] T006 [US1] Wire the mode through the answering pipeline in `assistant.ts`: mode selects chunker + cache file; retrieval ranks Chunks (stderr shows `W03(0.582)…` or `POL-NNN(…)` per mode); `retrievedPolicies` in answers/eval records becomes the de-duplicated union of top-k chunks' policyIds; `userPrompt` renders each chunk as `header\n\n{body}` so window prompts expose citable POL ids (FR-003)
+- [x] T007 [US1] Verify US1 with quickstart scenarios 1–5 in specs/002-chunking-mode-switch/quickstart.md: (1) no-flag sick-days ask → POL-009, exit 0, legacy cache migration + `cache hit [mode=policy]`; (2) `-- --chunking window` Silver PPO ask → $1,500 deductible citing POL-003, exit 0; (3) sabbatical window ask → BOTH five- and seven-year POL-016 thresholds present; (4) 401(k) window ask → POL-007 AND POL-015 with dates; (5) mode isolation — after window runs, no-flag ask still `cache hit [mode=policy]`, both cache files exist
+- [x] T008 [US1] Add `chunkingMode` to eval report metadata in `assistant.ts` (required field, `policy|window`) and to the markdown report header per FR-006; confirm a policy-mode eval record (spot-run `eval -- --k 4` if a fresh report is needed) carries `chunkingMode: "policy"`
 
 **Checkpoint**: Mode switch fully functional and isolated in both directions
 
@@ -70,9 +70,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [US2] Run full window-mode evaluation: `npm run eval -- --chunking window` → exit 0, 15/15 records, report tagged `chunkingMode: "window"` saved under `eval/` (new file; baselines untouched)
-- [ ] T010 [US2] Author `eval/comparison-<timestamp>.md` comparing the window-mode report against `eval/results-2026-08-15T12-56-48-996Z` per specs/002-chunking-mode-switch/quickstart.md scenario 6: per-question status/citation table, each diff classified improvement/regression/neutral with evidence quotes; explicit SC-004 checks that Q12 (POL-016 both thresholds), Q02 and Q11 (POL-007 + POL-015 both present with dates) lost no side; honest verdict — window mode losing is a valid finding, and the default stays policy unless evidence says otherwise
-- [ ] T011 [US2] Audit outputs after the comparison: no `PORTKEY_API_KEY` in either report or comparison; both baselines byte-identical to pre-feature state (`git status` clean for `eval/results-2026-08-15T*`); comparison cites question ids, policy ids, and measured numbers only (Principle VI)
+- [x] T009 [US2] Run full window-mode evaluation: `npm run eval -- --chunking window` → exit 0, 15/15 records, report tagged `chunkingMode: "window"` saved under `eval/` (new file; baselines untouched)
+- [x] T010 [US2] Author `eval/comparison-<timestamp>.md` comparing the window-mode report against `eval/results-2026-08-15T12-56-48-996Z` per specs/002-chunking-mode-switch/quickstart.md scenario 6: per-question status/citation table, each diff classified improvement/regression/neutral with evidence quotes; explicit SC-004 checks that Q12 (POL-016 both thresholds), Q02 and Q11 (POL-007 + POL-015 both present with dates) lost no side; honest verdict — window mode losing is a valid finding, and the default stays policy unless evidence says otherwise
+- [x] T011 [US2] Audit outputs after the comparison: no `PORTKEY_API_KEY` in either report or comparison; both baselines byte-identical to pre-feature state (`git status` clean for `eval/results-2026-08-15T*`); comparison cites question ids, policy ids, and measured numbers only (Principle VI)
 
 **Checkpoint**: Measured before/after evidence complete; Quality Gates satisfied
 
@@ -80,7 +80,7 @@
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T012 Run `npx tsc --noEmit` clean; rerun quickstart scenario 1 to re-confirm default-mode invariance after all changes; ensure stderr cache/migration notes match the contract wording in specs/002-chunking-mode-switch/contracts/cli.md
+- [x] T012 Run `npx tsc --noEmit` clean; rerun quickstart scenario 1 to re-confirm default-mode invariance after all changes; ensure stderr cache/migration notes match the contract wording in specs/002-chunking-mode-switch/contracts/cli.md
 
 ---
 

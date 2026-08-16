@@ -6,6 +6,8 @@ node_modules/
 
 # Generated runtime artifacts
 data/embeddings-cache.json
+data/embeddings-cache-policy.json
+data/embeddings-cache-window.json
 
 # Universal
 .DS_Store

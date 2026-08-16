@@ -6,16 +6,19 @@ import { fileURLToPath } from "node:url";
 const EDITION_DATE = "2025-10-01";
 const EXPECTED_POLICY_COUNT = 19;
 const DEFAULT_K = 4;
+const WINDOW_WORDS = 150; // ≈200 tokens (1 token ≈ 0.75 words), deterministic split
 const HANDBOOK_PATH = "data/benefits_policies.md";
 const QUESTIONS_PATH = "data/sample_questions.csv";
-const CACHE_PATH = "data/embeddings-cache.json";
+const LEGACY_CACHE_PATH = "data/embeddings-cache.json";
 const EVAL_DIR = "eval";
 
 const EXIT_OK = 0;
 const EXIT_ERROR = 1;
 const EXIT_DECLINED = 3;
 
-type Policy = { id: string; title: string; body: string; embedText: string };
+type ChunkingMode = "policy" | "window";
+type Policy = { id: string; title: string; body: string };
+type Chunk = { key: string; policyIds: string[]; header: string; body: string; embedText: string };
 type Handbook = { sha256: string; policies: Policy[]; byId: Map<string, Policy> };
 type Env = {
   PORTKEY_API_KEY: string;
@@ -73,7 +76,7 @@ function parseHandbook(path: string): Handbook {
     const bodyStart = f.start + f.id.length + f.title.length + 4;
     const bodyEnd = i + 1 < found.length ? found[i + 1].start : text.length;
     const body = text.slice(bodyStart, bodyEnd).trim();
-    return { id: f.id, title: f.title, body, embedText: `${f.id} ${f.title}\n\n${body}` };
+    return { id: f.id, title: f.title, body };
   });
   const ids = policies.map((p) => p.id);
   if (new Set(ids).size !== ids.length) fail(`duplicate POL-NNN ids in ${path}`);
@@ -85,9 +88,65 @@ function parseHandbook(path: string): Handbook {
   return { sha256, policies, byId: new Map(policies.map((p) => [p.id, p])) };
 }
 
+function policyChunks(handbook: Handbook): Chunk[] {
+  return handbook.policies.map((p) => {
+    const header = `${p.id} ${p.title}`;
+    return { key: p.id, policyIds: [p.id], header, body: p.body, embedText: `${header}\n\n${p.body}` };
+  });
+}
+
+function windowChunks(handbook: Handbook): Chunk[] {
+  const flat: { word: string; policyId: string }[] = [];
+  for (const policy of handbook.policies) {
+    for (const word of `${policy.id} ${policy.title}`.split(/\s+/)) flat.push({ word, policyId: policy.id });
+    flat.push({ word: "", policyId: policy.id });
+    for (const word of policy.body.split(/\s+/)) flat.push({ word, policyId: policy.id });
+  }
+  const chunks: Chunk[] = [];
+  let current: { word: string; policyId: string }[] = [];
+  const flush = () => {
+    if (current.length === 0) return;
+    const policyIds = [...new Set(current.map((w) => w.policyId))];
+    const body = current.map((w) => w.word).join(" ").replace(/\s+/g, " ").trim();
+    if (!body) {
+      current = [];
+      return;
+    }
+    const header = `Excerpt from ${policyIds.join(", ")}`;
+    const key = `W${String(chunks.length + 1).padStart(2, "0")}`;
+    chunks.push({ key, policyIds, header, body, embedText: `${header}\n\n${body}` });
+    current = [];
+  };
+  for (const token of flat) {
+    current.push(token);
+    if (current.length >= WINDOW_WORDS) flush();
+  }
+  flush();
+  if (chunks.length === 0) fail("window chunker produced no chunks");
+  for (const chunk of chunks) {
+    if (chunk.policyIds.some((id) => !handbook.byId.has(id))) {
+      fail(`window chunk ${chunk.key} references a policy outside the handbook`);
+    }
+  }
+  return chunks;
+}
+
+function buildChunks(mode: ChunkingMode, handbook: Handbook): Chunk[] {
+  return mode === "policy" ? policyChunks(handbook) : windowChunks(handbook);
+}
+
+function cachePathFor(mode: ChunkingMode): string {
+  return `data/embeddings-cache-${mode}.json`;
+}
+
 async function postJson<T>(label: string, request: () => Promise<Response>, parse: (body: unknown) => T): Promise<T> {
   const attempt = async (): Promise<Response> => {
-    const response = await request();
+    let response: Response;
+    try {
+      response = await request();
+    } catch (transport) {
+      throw Object.assign(new Error(`transport error: ${(transport as Error).message}`), { retryable: true });
+    }
     if (response.status >= 500 || response.status === 429) {
       throw Object.assign(new Error(`HTTP ${response.status}`), { retryable: true, status: response.status });
     }
@@ -177,13 +236,13 @@ function cosine(a: number[], b: number[]): number {
   return dot / (Math.sqrt(na) * Math.sqrt(nb));
 }
 
-async function retrieve(env: Env, question: string, handbook: Handbook, cache: Map<string, number[]>, k: number): Promise<{ policy: Policy; score: number }[]> {
+async function retrieve(env: Env, question: string, chunks: Chunk[], cache: Map<string, number[]>, k: number): Promise<{ chunk: Chunk; score: number }[]> {
   const [qv] = await embed(env, [question]);
-  const ranked = handbook.policies
-    .map((policy) => ({ policy, score: cosine(qv, cache.get(policy.id) as number[]) }))
+  const ranked = chunks
+    .map((chunk) => ({ chunk, score: cosine(qv, cache.get(chunk.key) as number[]) }))
     .sort((x, y) => y.score - x.score);
   const top = ranked.slice(0, k);
-  console.error(`retrieved: ${top.map((t) => `${t.policy.id}(${t.score.toFixed(3)})`).join(" ")}`);
+  console.error(`retrieved: ${top.map((t) => `${t.chunk.key}(${t.score.toFixed(3)})`).join(" ")}`);
   return top;
 }
 
@@ -205,8 +264,8 @@ function systemPrompt(): string {
   ].join("\n");
 }
 
-function userPrompt(question: string, retrieved: { policy: Policy }[]): string {
-  const blocks = retrieved.map((r) => `${r.policy.id} ${r.policy.title}\n\n${r.policy.body}`).join("\n\n---\n\n");
+function userPrompt(question: string, retrieved: { chunk: Chunk }[]): string {
+  const blocks = retrieved.map((r) => `${r.chunk.header}\n\n${r.chunk.body}`).join("\n\n---\n\n");
   return `Employee question:\n${question}\n\nPolicy excerpts from the handbook (edition ${EDITION_DATE}):\n\n${blocks}`;
 }
 
@@ -232,10 +291,11 @@ function parseAnswer(content: string, handbook: Handbook, retrievedIds: string[]
   return { status: "answered", text: rest, citations: [...tokens], retrievedPolicies: retrievedIds };
 }
 
-async function answerQuestion(env: Env, question: string, handbook: Handbook, cache: Map<string, number[]>, k: number): Promise<Answer> {
-  const top = await retrieve(env, question, handbook, cache, k);
+async function answerQuestion(env: Env, question: string, handbook: Handbook, chunks: Chunk[], cache: Map<string, number[]>, k: number): Promise<Answer> {
+  const top = await retrieve(env, question, chunks, cache, k);
   const content = await chat(env, systemPrompt(), userPrompt(question, top));
-  return parseAnswer(content, handbook, top.map((t) => t.policy.id));
+  const retrievedPolicies = [...new Set(top.flatMap((t) => t.chunk.policyIds))];
+  return parseAnswer(content, handbook, retrievedPolicies);
 }
 
 function printAnswer(answer: Answer, handbook: Handbook): void {
@@ -247,9 +307,18 @@ function printAnswer(answer: Answer, handbook: Handbook): void {
   console.log(`${answer.text}\n\nCitations:\n${citationLines.join("\n")}`);
 }
 
-function parseAskArgs(argv: string[]): { question: string; k: number } {
+const USAGE = 'usage: npm run ask -- "your benefits question" [--k N] [--chunking policy|window] | npm run eval -- [--k N] [--chunking policy|window]';
+
+function parseMode(value: string | undefined): ChunkingMode {
+  if (value === undefined) return "policy";
+  if (value === "policy" || value === "window") return value;
+  fail(`--chunking expects "policy" or "window" (got "${value}") — ${USAGE}`);
+}
+
+function parseAskArgs(argv: string[]): { question: string; k: number; mode: ChunkingMode } {
   const positional: string[] = [];
   let k = DEFAULT_K;
+  let mode: ChunkingMode = "policy";
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--k") {
       const next = argv[i + 1];
@@ -257,13 +326,35 @@ function parseAskArgs(argv: string[]): { question: string; k: number } {
       if (!next || !Number.isInteger(parsed) || parsed < 1 || parsed > 19) fail("--k expects an integer between 1 and 19");
       k = parsed;
       i++;
+    } else if (argv[i] === "--chunking") {
+      mode = parseMode(argv[i + 1]);
+      i++;
     } else {
       positional.push(argv[i]);
     }
   }
   const question = positional.join(" ").trim();
-  if (!question) fail('usage: npm run ask -- "your benefits question" [--k N]');
-  return { question, k };
+  if (!question) fail(USAGE);
+  return { question, k, mode };
+}
+
+function parseEvalArgs(argv: string[]): { k: number; mode: ChunkingMode } {
+  let k = DEFAULT_K;
+  let mode: ChunkingMode = "policy";
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--k") {
+      const parsed = Number(argv[i + 1]);
+      if (!argv[i + 1] || !Number.isInteger(parsed) || parsed < 1 || parsed > 19) fail("--k expects an integer between 1 and 19");
+      k = parsed;
+      i++;
+    } else if (argv[i] === "--chunking") {
+      mode = parseMode(argv[i + 1]);
+      i++;
+    } else {
+      fail(`unexpected argument "${argv[i]}" — ${USAGE}`);
+    }
+  }
+  return { k, mode };
 }
 
 function parseCsvLine(line: string): string[] {
@@ -310,12 +401,12 @@ function loadQuestions(path: string): { questionId: string; question: string }[]
 
 type EvalRecord = { questionId: string; question: string; answer: Answer };
 
-async function runEval(env: Env, handbook: Handbook, cache: Map<string, number[]>, k: number): Promise<number> {
+async function runEval(env: Env, handbook: Handbook, chunks: Chunk[], cache: Map<string, number[]>, k: number, mode: ChunkingMode): Promise<number> {
   const questions = loadQuestions(QUESTIONS_PATH);
-  console.error(`eval: running ${questions.length} questions (k=${k})`);
+  console.error(`eval: running ${questions.length} questions (k=${k}, chunking=${mode})`);
   const records: EvalRecord[] = [];
   for (const [index, q] of questions.entries()) {
-    const answer = await answerQuestion(env, q.question, handbook, cache, k);
+    const answer = await answerQuestion(env, q.question, handbook, chunks, cache, k);
     records.push({ questionId: q.questionId, question: q.question, answer });
     console.error(`eval: ${q.questionId} → ${answer.status} [${answer.citations.join(", ") || "none"}] (${index + 1}/${questions.length})`);
     if (index < questions.length - 1) await new Promise((r) => setTimeout(r, 500));
@@ -326,6 +417,7 @@ async function runEval(env: Env, handbook: Handbook, cache: Map<string, number[]
     runAt: new Date().toISOString(),
     llmModel: env.RAG_LLM_MODEL,
     embedModel: env.RAG_EMBED_MODEL,
+    chunkingMode: mode,
     k,
     handbookSha256: handbook.sha256,
     editionDate: EDITION_DATE,
@@ -342,7 +434,7 @@ async function runEval(env: Env, handbook: Handbook, cache: Map<string, number[]
   return EXIT_OK;
 }
 
-function evalMarkdown(report: { runAt: string; llmModel: string; embedModel: string; k: number; handbookSha256: string; records: EvalRecord[] }): string {
+function evalMarkdown(report: { runAt: string; llmModel: string; embedModel: string; chunkingMode: string; k: number; handbookSha256: string; records: EvalRecord[] }): string {
   const lines = [
     "# Evaluation Report — Benefits Policy Q&A",
     "",
@@ -350,6 +442,7 @@ function evalMarkdown(report: { runAt: string; llmModel: string; embedModel: str
     `- **Reference date ("today")**: ${EDITION_DATE}`,
     `- **LLM model**: ${report.llmModel}`,
     `- **Embedding model**: ${report.embedModel}`,
+    `- **Chunking mode**: ${report.chunkingMode}`,
     `- **Retrieval k**: ${report.k}`,
     `- **Handbook sha256**: ${report.handbookSha256}`,
     "",
@@ -380,66 +473,81 @@ function evalMarkdown(report: { runAt: string; llmModel: string; embedModel: str
 
 async function main(): Promise<number> {
   const [command, ...rest] = process.argv.slice(2);
+  if (command !== "ask" && command !== "eval") {
+    fail(USAGE);
+  }
+  const mode = command === "ask" ? parseAskArgs(rest).mode : parseEvalArgs(rest).mode;
   const env = loadEnv();
   const handbook = parseHandbook(HANDBOOK_PATH);
-  const buildVectors = async (): Promise<Map<string, number[]>> => {
-    console.error(`embeddings: cache miss → re-embedding ${handbook.policies.length} policies`);
-    const vectors = await embed(env, handbook.policies.map((p) => p.embedText));
-    const entries = handbook.policies.map((p, i) => [p.id, vectors[i]] as [string, number[]]);
-    const cache = {
-      fileSha256: handbook.sha256,
-      model: env.RAG_EMBED_MODEL,
-      createdAt: new Date().toISOString(),
-      embeddings: Object.fromEntries(entries),
-    };
-    const tmp = `${CACHE_PATH}.tmp`;
-    writeFileSync(tmp, JSON.stringify(cache));
-    renameSync(tmp, CACHE_PATH);
-    return new Map(entries);
-  };
-  const loadCache = (): Map<string, number[]> | null => {
-    const policyIds = new Set(handbook.policies.map((p) => p.id));
-    if (!existsSync(CACHE_PATH)) return null;
+  const chunks = buildChunks(mode, handbook);
+  const cachePath = cachePathFor(mode);
+
+  if (mode === "policy" && !existsSync(cachePath) && existsSync(LEGACY_CACHE_PATH)) {
     try {
-      const cached = JSON.parse(readFileSync(CACHE_PATH, "utf8")) as {
+      const legacy = JSON.parse(readFileSync(LEGACY_CACHE_PATH, "utf8")) as { fileSha256?: string; model?: string };
+      if (legacy.fileSha256 === handbook.sha256 && legacy.model === env.RAG_EMBED_MODEL) {
+        renameSync(LEGACY_CACHE_PATH, cachePath);
+        console.error("embeddings: migrated legacy cache → data/embeddings-cache-policy.json");
+      }
+    } catch {
+      console.error("embeddings: legacy cache unreadable — ignoring it");
+    }
+  }
+
+  const loadCache = (): Map<string, number[]> | null => {
+    const chunkKeys = new Set(chunks.map((c) => c.key));
+    if (!existsSync(cachePath)) return null;
+    try {
+      const cached = JSON.parse(readFileSync(cachePath, "utf8")) as {
         fileSha256: string;
         model: string;
+        mode?: string;
+        windowWords?: number;
         embeddings: Record<string, number[]>;
       };
       const keys = Object.keys(cached.embeddings ?? {});
       const valid =
         cached.fileSha256 === handbook.sha256 &&
         cached.model === env.RAG_EMBED_MODEL &&
-        keys.length === policyIds.size &&
-        keys.every((id) => policyIds.has(id));
+        (cached.mode ?? "policy") === mode &&
+        (mode === "window" ? cached.windowWords === WINDOW_WORDS : true) &&
+        keys.length === chunkKeys.size &&
+        keys.every((key) => chunkKeys.has(key));
       if (!valid) return null;
-      console.error(`embeddings: cache hit [sha256=${handbook.sha256.slice(0, 12)}, model=${env.RAG_EMBED_MODEL}]`);
+      console.error(`embeddings: cache hit [mode=${mode}, sha256=${handbook.sha256.slice(0, 12)}, model=${env.RAG_EMBED_MODEL}]`);
       return new Map(Object.entries(cached.embeddings));
     } catch {
       console.error("embeddings: cache unreadable — rebuilding");
       return null;
     }
   };
+  const buildVectors = async (): Promise<Map<string, number[]>> => {
+    console.error(`embeddings: cache miss → embedding ${chunks.length} ${mode} chunks`);
+    const vectors = await embed(env, chunks.map((c) => c.embedText));
+    const entries = chunks.map((c, i) => [c.key, vectors[i]] as [string, number[]]);
+    const cache = {
+      fileSha256: handbook.sha256,
+      model: env.RAG_EMBED_MODEL,
+      mode,
+      ...(mode === "window" ? { windowWords: WINDOW_WORDS } : {}),
+      createdAt: new Date().toISOString(),
+      embeddings: Object.fromEntries(entries),
+    };
+    const tmp = `${cachePath}.tmp`;
+    writeFileSync(tmp, JSON.stringify(cache));
+    renameSync(tmp, cachePath);
+    return new Map(entries);
+  };
   const cache = loadCache() ?? (await buildVectors());
+
   if (command === "ask") {
     const { question, k } = parseAskArgs(rest);
-    const answer = await answerQuestion(env, question, handbook, cache, k);
+    const answer = await answerQuestion(env, question, handbook, chunks, cache, k);
     printAnswer(answer, handbook);
     return answer.status === "answered" ? EXIT_OK : EXIT_DECLINED;
   }
-  if (command === "eval") {
-    let k = DEFAULT_K;
-    for (let i = 0; i < rest.length; i++) {
-      if (rest[i] === "--k") {
-        const parsed = Number(rest[i + 1]);
-        if (!rest[i + 1] || !Number.isInteger(parsed) || parsed < 1 || parsed > 19) fail("--k expects an integer between 1 and 19");
-        k = parsed;
-        i++;
-      }
-    }
-    return runEval(env, handbook, cache, k);
-  }
-  fail('unknown command — usage: assistant.ts ask "question" [--k N] | assistant.ts eval [--k N]');
+  const { k } = parseEvalArgs(rest);
+  return runEval(env, handbook, chunks, cache, k, mode);
 }
 
 process.exit(await main());
